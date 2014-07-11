@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title></title>
+        <link rel='stylesheet' type='text/css' href='stylesheet.css'/>
+	<script src="jquery-1.11.1.js"></script>
+        <script src="script.js"></script>
+	</head>
+	<body>
+        <canvas id="shootem" height=400 width=400></canvas>
+        <div id="debug">
+            <label for="targetinfo">Target Info:</label>
+            <div id="targetinfo">
+                <label for="targetx">X:</label>
+                <input id="targetx" class="display" readonly></input>
+                <label for="targety">Y:</label>
+                <input id="targety" class="display" readonly></input>
+                <label for="targetr">Radius:</label>
+                <input id="targetr" class="display" readonly></input>
+                <label for="targetTime">Time Factor:</label>
+                <input id="targetTime" class="display" readonly></input>
+            </div>
+        </div>
+        <p>
+        <div id="scoreboard">
+            <label for="score">Hits:</label>
+            <input id="score" class="display" readonly></input>
+            <label for="missCount">Misses:</label>
+            <input id="missCount" class="display" readonly></input>
+            <label for="accuracy">Accuracy:</label>
+            <input id="accuracy" class="display" readonly></input>
+        </div>
+        </p>
+	</body>
+</html>
+

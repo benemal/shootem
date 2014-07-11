@@ -1,0 +1,28 @@
+/* Add your CSS below! */
+#shootem {
+    background-color: #111;
+    cursor:crosshair;
+}
+
+#debug {
+    display: none;
+}
+#debug, #debug input {
+    font-family: monospace, "Consolas";
+}
+
+input.display {
+    border: 0px;
+}
+
+#targetinfo .display {
+    width: 50px;
+}
+
+#scoreboard, #scoreboard input {
+    font-family: fantasy;
+}
+#scoreboard .display {
+    width: 50px;
+}
+
