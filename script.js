@@ -8,8 +8,15 @@ var misses = 0
 var targetLocMargin = 0.1
 var targetRadius = { min: 10, max: 30 }
 var targetTimeout = 4000 //milliseconds
-var targetTime
 var targetMod
+
+var Target = function() {
+    this.startTime = Date.now()
+    var l = generateRandomLocation()
+    this.x = l.x
+    this.y = l.y
+    this.radius = generateRandomRadius()
+}
 
 $(document).ready(function() {
     shootCanvas = document.getElementById('shootem')
@@ -26,16 +33,18 @@ $(document).ready(function() {
     }
     
     // Generate and draw the first target
-    target = generateRandomTarget()
+    target = new Target()
     updateDebug()
     window.requestAnimationFrame(drawTarget)
 })
 
-function generateRandomTarget() {
-    targetTime = Date.now()
+function generateRandomLocation() {
     return { x:      Math.round(Math.random()*targetMod.width.mod + targetMod.width.min), 
-             y:      Math.round(Math.random()*targetMod.height.mod + targetMod.height.min), 
-             radius: Math.round(Math.random()*targetMod.radius.mod + targetMod.radius.min) }
+             y:      Math.round(Math.random()*targetMod.height.mod + targetMod.height.min) }
+}
+
+function generateRandomRadius() {
+    return Math.round(Math.random()*targetMod.radius.mod + targetMod.radius.min)
 }
 
 //draw a red target circle at (x,y) with radius r
@@ -45,7 +54,7 @@ function drawTarget() {
     context.arc(target.x, target.y, target.radius, 0, 2*Math.PI)
     context.fill()
     
-    var timeElapsed = (Date.now()-targetTime) / (targetTimeout)
+    var timeElapsed = (Date.now()-target.startTime) / (targetTimeout)
     $("#targetTime").val(timeElapsed)
     //alert(timeElapsed)
     context.fillStyle = "red"
@@ -59,7 +68,7 @@ function drawTarget() {
     if(timeElapsed >= 1) {
         misses++
         targetTimeout *= 1.1
-        target = generateRandomTarget()
+        target = new Target()
         context.clearRect(0,0, $("#shootem").attr("height"), $("#shootem").attr("width"))
         updateDebug()
         updateScoreboard()
@@ -82,7 +91,6 @@ function relMouseCoords(event){
     var canvasY = 0;
     var currentElement = event.target;
 
-    var wtf = 0
     do{
         totalOffsetX += currentElement.offsetLeft - currentElement.scrollLeft;
         totalOffsetY += currentElement.offsetTop - currentElement.scrollTop;
@@ -105,7 +113,7 @@ function shoot(event) {
     // check if the target was hit
     if(isTargetHit(c, target)) {
         context.clearRect(0,0, $("#shootem").attr("height"), $("#shootem").attr("width"))
-        target = generateRandomTarget()
+        target = new Target()
         updateDebug()
         window.requestAnimationFrame(drawTarget)
         hits++
