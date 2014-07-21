@@ -1,6 +1,9 @@
 // Add your JavaScript below!
 var shootCanvas
-var context
+var bulletCanvas
+var shootContext
+var bulletContext
+
 var target
 var hits = 0
 var misses = 0
@@ -21,7 +24,12 @@ var Target = function() {
 
 $(document).ready(function() {
     shootCanvas = document.getElementById('shootem')
-    context = shootCanvas.getContext('2d')
+    shootContext = shootCanvas.getContext('2d')
+    
+    bulletCanvas = document.createElement('canvas');
+    bulletCanvas.width = shootCanvas.width;
+    bulletCanvas.height = shootCanvas.height;    
+    bulletContext = bulletCanvas.getContext('2d');
     
     document.getElementById("shootem").addEventListener("mousedown", shoot, false)
     updateScoreboard()
@@ -50,26 +58,27 @@ function generateRandomRadius() {
 
 //draw a red target circle at (x,y) with radius r
 function drawTarget() {
-    context.fillStyle = "yellow"
-    context.beginPath()
-    context.arc(target.x, target.y, target.radius, 0, 2*Math.PI)
-    context.fill()
+    shootContext.drawImage(bulletCanvas, 0, 0);
+    shootContext.fillStyle = "yellow"
+    shootContext.beginPath()
+    shootContext.arc(target.x, target.y, target.radius, 0, 2*Math.PI)
+    shootContext.fill()
 
     var timeElapsed = (Date.now()-target.startTime) / (targetTimeout)
     $("#targetTime").val(timeElapsed)
     //alert(timeElapsed)
-    context.fillStyle = "red"
-    context.beginPath()
-    context.moveTo(target.x, target.y)
-    context.arc(target.x, target.y, 
+    shootContext.fillStyle = "red"
+    shootContext.beginPath()
+    shootContext.moveTo(target.x, target.y)
+    shootContext.arc(target.x, target.y, 
                 target.radius+1, 
                 0, 2*Math.PI* timeElapsed)
-    context.fill()
+    shootContext.fill()
     
     if(timeElapsed >= 1) {
         misses++
         targetCount--
-        context.clearRect(0,0, $("#shootem").attr("height"), $("#shootem").attr("width"))
+        shootContext.clearRect(0,0, $("#shootem").attr("height"), $("#shootem").attr("width"))
         
         if(targetCount > 0) {
             targetTimeout *= 1.1
@@ -86,10 +95,10 @@ function drawTarget() {
 }
 
 function drawBulletHole(coord) {
-    context.fillStyle = "gray"
-    context.beginPath()
-    context.arc(coord.x, coord.y, 1, 0, 2*Math.PI)
-    context.fill()
+    bulletContext.fillStyle = "gray"
+    bulletContext.beginPath()
+    bulletContext.arc(coord.x, coord.y, 1, 0, 2*Math.PI)
+    bulletContext.fill()
 }
 
 // from http://stackoverflow.com/a/5932203
@@ -118,7 +127,6 @@ function isTargetHit(shotLoc, target) {
 
 function shoot(event) {
     var c = relMouseCoords(event)
-    drawBulletHole(c)
     // check if the target was hit
     if(targetCount > 0) {
         if(isTargetHit(c, target)) {
@@ -126,7 +134,7 @@ function shoot(event) {
             targetCount--        
             targetTimeout *= 0.9
             target = 0
-            context.clearRect(0,0, $("#shootem").attr("height"), $("#shootem").attr("width"))
+            shootContext.clearRect(0,0, $("#shootem").attr("height"), $("#shootem").attr("width"))
             
             if(targetCount > 0) {
                 target = new Target()
@@ -136,6 +144,7 @@ function shoot(event) {
         }
         else {
             misses++
+            drawBulletHole(c)
         }
     }
 
