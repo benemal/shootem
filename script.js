@@ -5,6 +5,7 @@ var target
 var hits = 0
 var misses = 0
 
+var targetCount = 10
 var targetLocMargin = 0.1
 var targetRadius = { min: 10, max: 30 }
 var targetTimeout = 4000 //milliseconds
@@ -53,7 +54,7 @@ function drawTarget() {
     context.beginPath()
     context.arc(target.x, target.y, target.radius, 0, 2*Math.PI)
     context.fill()
-    
+
     var timeElapsed = (Date.now()-target.startTime) / (targetTimeout)
     $("#targetTime").val(timeElapsed)
     //alert(timeElapsed)
@@ -67,13 +68,21 @@ function drawTarget() {
     
     if(timeElapsed >= 1) {
         misses++
-        targetTimeout *= 1.1
-        target = new Target()
+        targetCount--
         context.clearRect(0,0, $("#shootem").attr("height"), $("#shootem").attr("width"))
-        updateDebug()
+        
+        if(targetCount > 0) {
+            targetTimeout *= 1.1
+            target = new Target()
+            updateDebug()
+        }
+        else {
+            target = 0
+        }
+        
         updateScoreboard()
     }
-    window.requestAnimationFrame(drawTarget)
+    if(targetCount > 0) { window.requestAnimationFrame(drawTarget) }
 }
 
 function drawBulletHole(coord) {
@@ -111,18 +120,25 @@ function shoot(event) {
     var c = relMouseCoords(event)
     drawBulletHole(c)
     // check if the target was hit
-    if(isTargetHit(c, target)) {
-        context.clearRect(0,0, $("#shootem").attr("height"), $("#shootem").attr("width"))
-        target = new Target()
-        updateDebug()
-        window.requestAnimationFrame(drawTarget)
-        hits++
-        targetTimeout *= 0.9
+    if(targetCount > 0) {
+        if(isTargetHit(c, target)) {
+            hits++
+            targetCount--        
+            targetTimeout *= 0.9
+            target = 0
+            context.clearRect(0,0, $("#shootem").attr("height"), $("#shootem").attr("width"))
+            
+            if(targetCount > 0) {
+                target = new Target()
+                updateDebug()
+                window.requestAnimationFrame(drawTarget)
+            }
+        }
+        else {
+            misses++
+        }
     }
-    else {
-        misses++
 
-    }
     updateScoreboard()
 }
 
@@ -131,6 +147,7 @@ function updateScoreboard() {
     $("#missCount").val(misses)
     var accuracy = Math.round(hits / (hits + misses) * 100)
     $("#accuracy").val((isNaN(accuracy) ? 100 : accuracy) + "%")
+    $("#targetCount").val(targetCount)
 }
 
 function updateDebug() {
@@ -139,4 +156,3 @@ function updateDebug() {
     $("#targety").val(target.y)
     $("#targetr").val(target.radius)
 }
-
