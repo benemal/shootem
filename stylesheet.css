@@ -2,6 +2,8 @@
 #shootem {
     background-color: #111;
     cursor:crosshair;
+    display: block;
+    margin: auto;
 }
 
 #debug {
@@ -19,10 +21,15 @@ input.display {
     width: 50px;
 }
 
+#scoreboard {
+    width: -webkit-max-content;
+    display: block;
+    margin: auto;
+}
+
 #scoreboard, #scoreboard input {
     font-family: fantasy;
 }
 #scoreboard .display {
     width: 50px;
 }
-
