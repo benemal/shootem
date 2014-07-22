@@ -20,6 +20,19 @@ var Target = function() {
     this.x = l.x
     this.y = l.y
     this.radius = generateRandomRadius()
+    this.timeoutID = window.setTimeout(targetExpired, targetTimeout)
+}
+
+function targetExpired() {
+    misses++
+    targetCount--
+
+    if(targetCount > 0) {
+        targetTimeout *= 1.1
+        target = new Target()
+        updateDebug()
+    }
+    updateScoreboard()
 }
 
 $(document).ready(function() {
@@ -57,11 +70,12 @@ function generateRandomRadius() {
 }
 
 function render() {
+    shootContext.clearRect(0,0, $("#shootem").attr("height"), $("#shootem").attr("width"))
     shootContext.drawImage(bulletCanvas, 0, 0);
     if(targetCount > 0) {
         drawTarget();
-    	window.requestAnimationFrame(render)
     }
+    window.requestAnimationFrame(render)
 }
 
 //draw a red target circle at (x,y) with radius r
@@ -82,23 +96,6 @@ function drawTarget() {
                 target.radius+1, 
                 0, 2*Math.PI* timeElapsed)
     shootContext.fill()
-    //TODO separate game logic code from rendering code
-    if(timeElapsed >= 1) {
-        misses++
-        targetCount--
-        shootContext.clearRect(0,0, $("#shootem").attr("height"), $("#shootem").attr("width"))
-        
-        if(targetCount > 0) {
-            targetTimeout *= 1.1
-            target = new Target()
-            updateDebug()
-        }
-        else {
-            target = 0
-        }
-        
-        updateScoreboard()
-    }
 }
 
 function drawBulletHole(coord) {
@@ -134,24 +131,24 @@ function isTargetHit(shotLoc, target) {
 
 function shoot(event) {
     var c = relMouseCoords(event)
+
+    drawBulletHole(c)
     // check if the target was hit
     if(targetCount > 0) {
         if(isTargetHit(c, target)) {
             hits++
             targetCount--        
             targetTimeout *= 0.9
-            target = 0
-            shootContext.clearRect(0,0, $("#shootem").attr("height"), $("#shootem").attr("width"))
+            window.clearTimeout(target.timeoutID)
+            delete target.timeoutID
             
             if(targetCount > 0) {
                 target = new Target()
                 updateDebug()
-                window.requestAnimationFrame(render)
             }
         }
         else {
             misses++
-            drawBulletHole(c)
         }
     }
 
