@@ -44,7 +44,7 @@ $(document).ready(function() {
     // Generate and draw the first target
     target = new Target()
     updateDebug()
-    window.requestAnimationFrame(drawTarget)
+    window.requestAnimationFrame(render)
 })
 
 function generateRandomLocation() {
@@ -56,9 +56,17 @@ function generateRandomRadius() {
     return Math.round(Math.random()*targetMod.radius.mod + targetMod.radius.min)
 }
 
-//draw a red target circle at (x,y) with radius r
-function drawTarget() {
+function render() {
     shootContext.drawImage(bulletCanvas, 0, 0);
+    if(targetCount > 0) {
+        drawTarget();
+    	window.requestAnimationFrame(render)
+    }
+}
+
+//draw a red target circle at (x,y) with radius r
+//TODO add parameter "target"
+function drawTarget() {
     shootContext.fillStyle = "yellow"
     shootContext.beginPath()
     shootContext.arc(target.x, target.y, target.radius, 0, 2*Math.PI)
@@ -74,7 +82,7 @@ function drawTarget() {
                 target.radius+1, 
                 0, 2*Math.PI* timeElapsed)
     shootContext.fill()
-    
+    //TODO separate game logic code from rendering code
     if(timeElapsed >= 1) {
         misses++
         targetCount--
@@ -91,7 +99,6 @@ function drawTarget() {
         
         updateScoreboard()
     }
-    if(targetCount > 0) { window.requestAnimationFrame(drawTarget) }
 }
 
 function drawBulletHole(coord) {
@@ -139,7 +146,7 @@ function shoot(event) {
             if(targetCount > 0) {
                 target = new Target()
                 updateDebug()
-                window.requestAnimationFrame(drawTarget)
+                window.requestAnimationFrame(render)
             }
         }
         else {
