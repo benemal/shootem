@@ -16,9 +16,7 @@ var targetMod
 
 var Target = function() {
     this.startTime = Date.now()
-    var l = generateRandomLocation()
-    this.x = l.x
-    this.y = l.y
+    this.loc = generateRandomLocation()
     this.radius = generateRandomRadius()
     this.timeoutID = window.setTimeout(targetExpired, targetTimeout)
 }
@@ -83,7 +81,7 @@ function render() {
 function drawTarget() {
     shootContext.fillStyle = "yellow"
     shootContext.beginPath()
-    shootContext.arc(target.x, target.y, target.radius, 0, 2*Math.PI)
+    shootContext.arc(target.loc.x, target.loc.y, target.radius, 0, 2*Math.PI)
     shootContext.fill()
 
     var timeElapsed = (Date.now()-target.startTime) / (targetTimeout)
@@ -91,8 +89,8 @@ function drawTarget() {
     //alert(timeElapsed)
     shootContext.fillStyle = "red"
     shootContext.beginPath()
-    shootContext.moveTo(target.x, target.y)
-    shootContext.arc(target.x, target.y, 
+    shootContext.moveTo(target.loc.x, target.loc.y)
+    shootContext.arc(target.loc.x, target.loc.y, 
                 target.radius+1, 
                 0, 2*Math.PI* timeElapsed)
     shootContext.fill()
@@ -126,7 +124,7 @@ function relMouseCoords(event){
 }
 
 function isTargetHit(shotLoc, target) {
-    return Math.pow(shotLoc.x - target.x, 2) + Math.pow(shotLoc.y - target.y, 2) < Math.pow(target.radius, 2)
+    return Math.pow(shotLoc.x - target.loc.x, 2) + Math.pow(shotLoc.y - target.loc.y, 2) < Math.pow(target.radius, 2)
 }
 
 function shoot(event) {
@@ -165,7 +163,7 @@ function updateScoreboard() {
 
 function updateDebug() {
     // update debugging info
-    $("#targetx").val(target.x)
-    $("#targety").val(target.y)
+    $("#targetx").val(target.loc.x)
+    $("#targety").val(target.loc.y)
     $("#targetr").val(target.radius)
 }
