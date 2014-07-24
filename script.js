@@ -5,14 +5,38 @@ var shootContext
 var bulletContext
 
 var target
-var hits = 0
-var misses = 0
+var hits
+var misses
+var targetTimeout
+var targetCounter
+var startTimeout = 4000;
+var startCount = 10;
 
-var targetCount = 10
 var targetLocMargin = 0.1
 var targetRadius = { min: 10, max: 30 }
-var targetTimeout = 4000 //milliseconds
 var targetMod
+
+var TargetCounter = function(startCount) {
+    var count = startCount;
+    this.decrement = function() {
+        count--;
+        if(count > 0) {
+            target = new Target();
+            updateDebug();
+        }
+        else {
+            $("#shootem").click(endGame);
+        }
+        updateScoreboard();
+    }
+    
+    this.__defineGetter__("count", function() { return count; });
+}
+
+function endGame() {
+    $("#shootem").unbind();
+    $("#shootem").click(restartGameEvent);
+}
 
 var Target = function() {
     this.startTime = Date.now()
@@ -22,15 +46,9 @@ var Target = function() {
 }
 
 function targetExpired() {
-    misses++
-    targetCount--
-
-    if(targetCount > 0) {
-        targetTimeout *= 1.1
-        target = new Target()
-        updateDebug()
-    }
-    updateScoreboard()
+    misses++;
+    targetTimeout *= 1.1;
+    targetCounter.decrement();
 }
 
 $(document).ready(function() {
@@ -42,21 +60,37 @@ $(document).ready(function() {
     bulletCanvas.height = shootCanvas.height;    
     bulletContext = bulletCanvas.getContext('2d');
     
-    document.getElementById("shootem").addEventListener("mousedown", shoot, false)
-    updateScoreboard()
-
-    // Calculate modifiers for target location/radius
+    // Calculate RNG modifiers for target location/radius
     targetMod = {
-        width: { mod: $("#shootem").attr("width") * (1-targetLocMargin*2), min: $("#shootem").attr("width")*targetLocMargin},
-        height: { mod: $("#shootem").attr("height") * (1-targetLocMargin*2), min: $("#shootem").attr("height")*targetLocMargin},
+        width: { mod: shootCanvas.width * (1-targetLocMargin*2), min: shootCanvas.width*targetLocMargin},
+        height: { mod: shootCanvas.height * (1-targetLocMargin*2), min:shootCanvas.height*targetLocMargin},
         radius: { mod: (targetRadius.max - targetRadius.min), min: targetRadius.min}
     }
     
     // Generate and draw the first target
-    target = new Target()
-    updateDebug()
-    window.requestAnimationFrame(render)
+    restartGame(startTimeout, startCount);
 })
+
+function restartGameEvent(event) {
+    restartGame(startTimeout, startCount);
+}
+
+function restartGame(sTargetTimeout, sTargetCount) {
+    targetTimeout = sTargetTimeout;
+    targetCounter = new TargetCounter(sTargetCount);
+    hits = 0;
+    misses = 0;
+    target = new Target();
+    
+    updateDebug();
+    updateScoreboard();
+
+    $("#shootem").unbind("click", restartGameEvent);
+    document.getElementById("shootem").addEventListener("mousedown", shoot, false)
+
+    bulletContext.clearRect(0,0, bulletCanvas.height, bulletCanvas.width);
+    window.requestAnimationFrame(render);
+}
 
 function generateRandomLocation() {
     return { x:      Math.round(Math.random()*targetMod.width.mod + targetMod.width.min), 
@@ -68,9 +102,9 @@ function generateRandomRadius() {
 }
 
 function render() {
-    shootContext.clearRect(0,0, $("#shootem").attr("height"), $("#shootem").attr("width"))
+    shootContext.clearRect(0,0, shootCanvas.height, shootCanvas.width)
     shootContext.drawImage(bulletCanvas, 0, 0);
-    if(targetCount > 0) {
+    if(targetCounter.count > 0) {
         drawTarget();
     }
     window.requestAnimationFrame(render)
@@ -132,18 +166,14 @@ function shoot(event) {
 
     drawBulletHole(c)
     // check if the target was hit
-    if(targetCount > 0) {
+    if(targetCounter.count > 0) {
         if(isTargetHit(c, target)) {
-            hits++
-            targetCount--        
+            hits++       
             targetTimeout *= 0.9
+            // must clear timeout before calling decrement, lest the timeout event be left hanging
             window.clearTimeout(target.timeoutID)
             delete target.timeoutID
-            
-            if(targetCount > 0) {
-                target = new Target()
-                updateDebug()
-            }
+            targetCounter.decrement();
         }
         else {
             misses++
@@ -158,7 +188,7 @@ function updateScoreboard() {
     $("#missCount").val(misses)
     var accuracy = Math.round(hits / (hits + misses) * 100)
     $("#accuracy").val((isNaN(accuracy) ? 100 : accuracy) + "%")
-    $("#targetCount").val(targetCount)
+    $("#targetCount").val(targetCounter.count)
 }
 
 function updateDebug() {
