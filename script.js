@@ -10,7 +10,7 @@ var misses
 var targetTimeout
 var targetCounter
 var startTimeout = 4000;
-var startCount = 10;
+var startCount = 3;
 
 var targetLocMargin = 0.1
 var targetRadius = { min: 10, max: 30 }
@@ -25,17 +25,12 @@ var TargetCounter = function(startCount) {
             updateDebug();
         }
         else {
-            $("#shootem").click(endGame);
+            $("#pfoverlay").show();
         }
         updateScoreboard();
     }
     
     this.__defineGetter__("count", function() { return count; });
-}
-
-function endGame() {
-    $("#shootem").unbind();
-    $("#shootem").click(restartGameEvent);
 }
 
 var Target = function() {
@@ -67,8 +62,8 @@ $(document).ready(function() {
         radius: { mod: (targetRadius.max - targetRadius.min), min: targetRadius.min}
     }
     
-    // Generate and draw the first target
-    restartGame(startTimeout, startCount);
+    $("#pfoverlay").show();
+    $("#pfoverlay").click(restartGameEvent);
 })
 
 function restartGameEvent(event) {
@@ -76,6 +71,7 @@ function restartGameEvent(event) {
 }
 
 function restartGame(sTargetTimeout, sTargetCount) {
+    $("#pfoverlay").hide();
     targetTimeout = sTargetTimeout;
     targetCounter = new TargetCounter(sTargetCount);
     hits = 0;
