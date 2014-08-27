@@ -33,13 +33,30 @@ var Target = function() {
     this.startTime = Date.now()
     this.loc = generateRandomLocation()
     this.radius = generateRandomRadius()
-    this.timeoutID = window.setTimeout(targetExpired, targetTimeout)
+    this.timeoutID = window.setTimeout(targetExpired, targetTimeout, this)
 }
+
+function targetHit(target) {
+    hits++       
+    targetTimeout *= 0.9
+    // must clear timeout before calling decrement, lest the timeout event be left hanging
+    window.clearTimeout(target.timeoutID)
+    delete target.timeoutID
+    targetCounter.decrement();
+    
+    console.log("Target hit: " + target);
+};
+
+function targetMiss() {
+    misses++;
+    console.log("Miss");
+};
 
 function targetExpired() {
     misses++;
     targetTimeout *= 1.1;
     targetCounter.decrement();
+    console.log("Target expired");
 }
 
 $(document).ready(function() {
@@ -127,15 +144,10 @@ function shoot(event) {
     // check if the target was hit
     if(targetCounter.count > 0) {
         if(isTargetHit(c, target)) {
-            hits++       
-            targetTimeout *= 0.9
-            // must clear timeout before calling decrement, lest the timeout event be left hanging
-            window.clearTimeout(target.timeoutID)
-            delete target.timeoutID
-            targetCounter.decrement();
+            targetHit(target);
         }
         else {
-            misses++
+            targetMiss();
         }
     }
 
