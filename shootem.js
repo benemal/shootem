@@ -1,20 +1,16 @@
 // Add your JavaScript below!
-var shootCanvas
-var bulletCanvas
-var shootContext
-var bulletContext
 
 var target
 var hits
 var misses
 var targetTimeout
 var targetCounter
-var startTimeout = 4000;
+var startTimeout = 2000;
 var startCount = 3;
 
 var targetLocMargin = 0.1
 var targetRadius = { min: 10, max: 30 }
-var targetMod
+var targetModFactors
 
 var TargetCounter = function(startCount) {
     var count = startCount;
@@ -25,7 +21,7 @@ var TargetCounter = function(startCount) {
             updateDebug();
         }
         else {
-            $("#pfoverlay").show();
+            $("#startScreen").show();
         }
         updateScoreboard();
     }
@@ -47,31 +43,34 @@ function targetExpired() {
 }
 
 $(document).ready(function() {
-    shootCanvas = document.getElementById('shootem')
-    shootContext = shootCanvas.getContext('2d')
-    
-    bulletCanvas = document.createElement('canvas');
-    bulletCanvas.width = shootCanvas.width;
-    bulletCanvas.height = shootCanvas.height;    
-    bulletContext = bulletCanvas.getContext('2d');
-    
+    var viewSize = readyView(document.getElementById("shootem"));
     // Calculate RNG modifiers for target location/radius
-    targetMod = {
-        width: { mod: shootCanvas.width * (1-targetLocMargin*2), min: shootCanvas.width*targetLocMargin},
-        height: { mod: shootCanvas.height * (1-targetLocMargin*2), min:shootCanvas.height*targetLocMargin},
+    targetModFactors = {
+        width: { mod: viewSize.width * (1-targetLocMargin*2), min: viewSize.width*targetLocMargin},
+        height: { mod: viewSize.height * (1-targetLocMargin*2), min: viewSize.height*targetLocMargin},
         radius: { mod: (targetRadius.max - targetRadius.min), min: targetRadius.min}
     }
     
-    $("#pfoverlay").show();
-    $("#pfoverlay").click(restartGameEvent);
+    $("#startScreen").click(restartGameEvent);
+    showStartScreen();
 })
+
+function pauseGame(event) {
+    //  push/pop screens on a stack?
+    //  if game is running
+    //      stop game action
+    //      display pause screen
+    //  else
+    //      back out of current screen
+    
+}
 
 function restartGameEvent(event) {
     restartGame(startTimeout, startCount);
 }
 
 function restartGame(sTargetTimeout, sTargetCount) {
-    $("#pfoverlay").hide();
+    $("#startScreen").hide();
     targetTimeout = sTargetTimeout;
     targetCounter = new TargetCounter(sTargetCount);
     hits = 0;
@@ -84,53 +83,17 @@ function restartGame(sTargetTimeout, sTargetCount) {
     $("#shootem").unbind("click", restartGameEvent);
     document.getElementById("shootem").addEventListener("mousedown", shoot, false)
 
-    bulletContext.clearRect(0,0, bulletCanvas.height, bulletCanvas.width);
+    clearBullets();
     window.requestAnimationFrame(render);
 }
 
 function generateRandomLocation() {
-    return { x:      Math.round(Math.random()*targetMod.width.mod + targetMod.width.min), 
-             y:      Math.round(Math.random()*targetMod.height.mod + targetMod.height.min) }
+    return { x:      Math.round(Math.random()*targetModFactors.width.mod + targetModFactors.width.min), 
+             y:      Math.round(Math.random()*targetModFactors.height.mod + targetModFactors.height.min) }
 }
 
 function generateRandomRadius() {
-    return Math.round(Math.random()*targetMod.radius.mod + targetMod.radius.min)
-}
-
-function render() {
-    shootContext.clearRect(0,0, shootCanvas.height, shootCanvas.width)
-    shootContext.drawImage(bulletCanvas, 0, 0);
-    if(targetCounter.count > 0) {
-        drawTarget();
-    }
-    window.requestAnimationFrame(render)
-}
-
-//draw a red target circle at (x,y) with radius r
-//TODO add parameter "target"
-function drawTarget() {
-    shootContext.fillStyle = "yellow"
-    shootContext.beginPath()
-    shootContext.arc(target.loc.x, target.loc.y, target.radius, 0, 2*Math.PI)
-    shootContext.fill()
-
-    var timeElapsed = (Date.now()-target.startTime) / (targetTimeout)
-    $("#targetTime").val(timeElapsed)
-    //alert(timeElapsed)
-    shootContext.fillStyle = "red"
-    shootContext.beginPath()
-    shootContext.moveTo(target.loc.x, target.loc.y)
-    shootContext.arc(target.loc.x, target.loc.y, 
-                target.radius+1, 
-                0, 2*Math.PI* timeElapsed)
-    shootContext.fill()
-}
-
-function drawBulletHole(coord) {
-    bulletContext.fillStyle = "gray"
-    bulletContext.beginPath()
-    bulletContext.arc(coord.x, coord.y, 1, 0, 2*Math.PI)
-    bulletContext.fill()
+    return Math.round(Math.random()*targetModFactors.radius.mod + targetModFactors.radius.min)
 }
 
 // from http://stackoverflow.com/a/5932203
@@ -160,7 +123,7 @@ function isTargetHit(shotLoc, target) {
 function shoot(event) {
     var c = relMouseCoords(event)
 
-    drawBulletHole(c)
+    drawBulletHole(c);
     // check if the target was hit
     if(targetCounter.count > 0) {
         if(isTargetHit(c, target)) {
@@ -177,19 +140,4 @@ function shoot(event) {
     }
 
     updateScoreboard()
-}
-
-function updateScoreboard() {
-    $("#score").val(hits)
-    $("#missCount").val(misses)
-    var accuracy = Math.round(hits / (hits + misses) * 100)
-    $("#accuracy").val((isNaN(accuracy) ? 100 : accuracy) + "%")
-    $("#targetCount").val(targetCounter.count)
-}
-
-function updateDebug() {
-    // update debugging info
-    $("#targetx").val(target.loc.x)
-    $("#targety").val(target.loc.y)
-    $("#targetr").val(target.radius)
 }
