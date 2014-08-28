@@ -3,19 +3,11 @@
 var hits
 var misses
 
-var targetLocMargin = 0.1
-var targetRadius = { min: 10, max: 30 }
-var targetModFactors
-
 $(document).ready(function() {
     var viewSize = readyView(document.getElementById("shootem"));
-    // Calculate RNG modifiers for target location/radius
-    targetModFactors = {
-        width: { mod: viewSize.width * (1-targetLocMargin*2), min: viewSize.width*targetLocMargin},
-        height: { mod: viewSize.height * (1-targetLocMargin*2), min: viewSize.height*targetLocMargin},
-        radius: { mod: (targetRadius.max - targetRadius.min), min: targetRadius.min}
-    }
     
+    readyTarget(viewSize);
+
     $("#startScreen").click(restartGameEvent);
     showStartScreen();
 })
@@ -31,7 +23,7 @@ function pauseGame(event) {
 }
 
 function restartGameEvent(event) {
-    restartGame(startTimeout, startCount);
+    restartGame(1500, 3);
 }
 
 function restartGame(sTargetTimeout, sTargetCount) {
@@ -50,15 +42,6 @@ function restartGame(sTargetTimeout, sTargetCount) {
 
     clearBullets();
     window.requestAnimationFrame(render);
-}
-
-function generateRandomLocation() {
-    return { x:      Math.round(Math.random()*targetModFactors.width.mod + targetModFactors.width.min), 
-             y:      Math.round(Math.random()*targetModFactors.height.mod + targetModFactors.height.min) }
-}
-
-function generateRandomRadius() {
-    return Math.round(Math.random()*targetModFactors.radius.mod + targetModFactors.radius.min)
 }
 
 // from http://stackoverflow.com/a/5932203
@@ -90,13 +73,11 @@ function shoot(event) {
 
     drawBulletHole(c);
     // check if the target was hit
-    if(targetCounter.count > 0) {
-        if(isTargetHit(c, target)) {
-            targetHit(target);
-        }
-        else {
-            targetMiss();
-        }
+    if(isTargetHit(c, target)) {
+        targetHit(target);
+    }
+    else {
+        targetMiss();
     }
 
     updateScoreboard()

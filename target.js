@@ -1,8 +1,19 @@
 var target
 var targetTimeout
 var targetCounter
-var startTimeout = 2000;
-var startCount = 3;
+
+var targetLocMargin = 0.1
+var targetRadius = { min: 10, max: 30 }
+var targetModFactors
+
+var readyTarget = function(viewSize) {
+    // Calculate RNG modifiers for target location/radius
+    targetModFactors = {
+        width: { mod: viewSize.width * (1-targetLocMargin*2), min: viewSize.width*targetLocMargin},
+        height: { mod: viewSize.height * (1-targetLocMargin*2), min: viewSize.height*targetLocMargin},
+        radius: { mod: (targetRadius.max - targetRadius.min), min: targetRadius.min}
+    }
+};
 
 var TargetCounter = function(startCount) {
     var count = startCount;
@@ -26,6 +37,15 @@ var Target = function() {
     this.loc = generateRandomLocation()
     this.radius = generateRandomRadius()
     this.timeoutID = window.setTimeout(targetExpired, targetTimeout, this)
+}
+
+function generateRandomLocation() {
+    return { x:      Math.round(Math.random()*targetModFactors.width.mod + targetModFactors.width.min), 
+             y:      Math.round(Math.random()*targetModFactors.height.mod + targetModFactors.height.min) }
+}
+
+function generateRandomRadius() {
+    return Math.round(Math.random()*targetModFactors.radius.mod + targetModFactors.radius.min)
 }
 
 function targetHit(target) {
