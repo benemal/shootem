@@ -61,7 +61,7 @@ function relMouseCoords(event){
     canvasX = event.clientX - totalOffsetX;
     canvasY = event.clientY - totalOffsetY;
 
-    return {x:canvasX, y:canvasY}
+    return new Vector(canvasX, canvasY);
 }
 
 function isTargetHit(shotLoc, target) {
@@ -82,3 +82,12 @@ function shoot(event) {
 
     updateScoreboard()
 }
+
+var Vector = function(x, y) {
+    this.x = x;
+    this.y = y;
+};
+
+Vector.prototype.toString = function() {
+    return "[" + this.x + ", " + this.y + "]";
+};

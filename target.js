@@ -39,9 +39,13 @@ var Target = function() {
     this.timeoutID = window.setTimeout(targetExpired, targetTimeout, this)
 }
 
+Target.prototype.toString = function() {
+    return "Target: startTime: " + this.startTime + ", loc: " + this.loc + ", radius: " + this.radius + ", timeoutID: " + this.timeoutID;
+};
+
 function generateRandomLocation() {
-    return { x:      Math.round(Math.random()*targetModFactors.width.mod + targetModFactors.width.min), 
-             y:      Math.round(Math.random()*targetModFactors.height.mod + targetModFactors.height.min) }
+    return new Vector(Math.round(Math.random()*targetModFactors.width.mod + targetModFactors.width.min), 
+                        Math.round(Math.random()*targetModFactors.height.mod + targetModFactors.height.min)); 
 }
 
 function generateRandomRadius() {
@@ -49,24 +53,26 @@ function generateRandomRadius() {
 }
 
 function targetHit(target) {
+    console.log("Target hit: " + target);
+
     hits++       
     targetTimeout *= 0.9
     // must clear timeout before calling decrement, lest the timeout event be left hanging
     window.clearTimeout(target.timeoutID)
     delete target.timeoutID
     targetCounter.decrement();
-    
-    console.log("Target hit: " + target);
 };
 
 function targetMiss() {
-    misses++;
     console.log("Miss");
+
+    misses++;
 };
 
 function targetExpired() {
+    console.log("Target expired: " + target);
+
     misses++;
     targetTimeout *= 1.1;
     targetCounter.decrement();
-    console.log("Target expired");
 }
