@@ -65,7 +65,7 @@ function relMouseCoords(event){
 }
 
 function isTargetHit(shotLoc, target) {
-    return Math.pow(shotLoc.x - target.loc.x, 2) + Math.pow(shotLoc.y - target.loc.y, 2) < Math.pow(target.radius, 2)
+    return Math.pow(shotLoc.x - target.x, 2) + Math.pow(shotLoc.y - target.y, 2) < Math.pow(target.radius, 2)
 }
 
 function shoot(event) {

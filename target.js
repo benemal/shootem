@@ -37,6 +37,9 @@ var Target = function() {
     this.loc = generateRandomLocation()
     this.radius = generateRandomRadius()
     this.timeoutID = window.setTimeout(targetExpired, targetTimeout, this)
+
+    this.__defineGetter__("x", function() { return this.loc.x; });
+    this.__defineGetter__("y", function() { return this.loc.y; });
 }
 
 Target.prototype.toString = function() {
