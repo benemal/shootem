@@ -28,20 +28,20 @@ var clearBullets = function() {
 
     //draw a red target circle at (x,y) with radius r
     //TODO add parameter "target"
-var drawTarget = function () {
+var drawTarget = function (t, i, a) {
     shootContext.fillStyle = "yellow"
     shootContext.beginPath()
-    shootContext.arc(target.loc.x, target.loc.y, target.radius, 0, 2*Math.PI)
+    shootContext.arc(t.loc.x, t.loc.y, t.radius, 0, 2*Math.PI)
     shootContext.fill()
 
-    var timeElapsed = (Date.now()-target.startTime) / (targetTimeout)
+    var timeElapsed = (Date.now()-t.startTime) / (targetTimeout)
     $("#targetTime").val(timeElapsed)
     //alert(timeElapsed)
     shootContext.fillStyle = "red"
     shootContext.beginPath()
-    shootContext.moveTo(target.loc.x, target.loc.y)
-    shootContext.arc(target.loc.x, target.loc.y, 
-                target.radius+1, 
+    shootContext.moveTo(t.loc.x, t.loc.y)
+    shootContext.arc(t.loc.x, t.loc.y, 
+                t.radius+1, 
                 0, 2*Math.PI* timeElapsed)
     shootContext.fill()
 };
@@ -57,9 +57,8 @@ var render = function () {
     shootContext.clearRect(0,0, shootCanvas.height, shootCanvas.width)
     shootContext.drawImage(bulletCanvas, 0, 0);
 
-    if(targetCounter.count > 0) {
-        drawTarget();
-    }
+    targetManager.targetList.forEach(drawTarget);
+
     window.requestAnimationFrame(render)
 };
 
@@ -68,7 +67,7 @@ function updateScoreboard() {
     $("#missCount").val(misses)
     var accuracy = Math.round(hits / (hits + misses) * 100)
     $("#accuracy").val((isNaN(accuracy) ? 100 : accuracy) + "%")
-    $("#targetCount").val(targetCounter.count)
+    $("#targetCount").val(targetManager.count);
 }
 
 function updateDebug() {

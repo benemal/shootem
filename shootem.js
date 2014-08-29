@@ -29,12 +29,10 @@ function restartGameEvent(event) {
 function restartGame(sTargetTimeout, sTargetCount) {
     $("#startScreen").hide();
     targetTimeout = sTargetTimeout;
-    targetCounter = new TargetCounter(sTargetCount);
+    targetManager = new TargetManager(sTargetCount);
     hits = 0;
     misses = 0;
-    target = new Target();
     
-    updateDebug();
     updateScoreboard();
 
     $("#shootem").unbind("click", restartGameEvent);
@@ -72,13 +70,21 @@ function shoot(event) {
     var c = relMouseCoords(event)
 
     drawBulletHole(c);
+
+    deadTargets = [];
     // check if the target was hit
-    if(isTargetHit(c, target)) {
-        targetHit(target);
+    var i;
+    for (i = 0; i < targetManager.targetList.length; i++) {
+        if(isTargetHit(c, targetManager.targetList[i])) {
+            targetHit(targetManager.targetList[i]);
+            deadTargets[deadTargets.length] = targetManager.targetList[i];
+        }
     }
-    else {
-        targetMiss();
-    }
+
+    if(deadTargets.length == 0) { targetMiss(); }
+    deadTargets.forEach(function(t, i, a) {
+        targetManager.remove(t);
+    });
 
     updateScoreboard()
 }

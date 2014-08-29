@@ -1,6 +1,5 @@
-var target
 var targetTimeout
-var targetCounter
+var targetManager
 
 var targetLocMargin = 0.1
 var targetRadius = { min: 10, max: 30 }
@@ -15,21 +14,22 @@ var readyTarget = function(viewSize) {
     }
 };
 
-var TargetCounter = function(startCount) {
-    var count = startCount;
-    this.decrement = function() {
-        count--;
-        if(count > 0) {
-            target = new Target();
-            updateDebug();
-        }
-        else {
+var TargetManager = function(startCount) {
+    this.targetList = [];
+    var i;
+    for (i = 0; i < startCount; i++) {
+        this.targetList[this.targetList.length] = new Target();
+    }
+
+    this.remove = function(t) {
+        this.targetList.splice(this.targetList.indexOf(t), 1);
+        if (this.targetList.length <= 0) {
             $("#startScreen").show();
         }
         updateScoreboard();
     }
-    
-    this.__defineGetter__("count", function() { return count; });
+
+    this.__defineGetter__("count", function() { return this.targetList.length; });
 }
 
 var Target = function() {
@@ -63,7 +63,6 @@ function targetHit(target) {
     // must clear timeout before calling decrement, lest the timeout event be left hanging
     window.clearTimeout(target.timeoutID)
     delete target.timeoutID
-    targetCounter.decrement();
 };
 
 function targetMiss() {
@@ -72,10 +71,10 @@ function targetMiss() {
     misses++;
 };
 
-function targetExpired() {
+function targetExpired(target) {
     console.log("Target expired: " + target);
 
     misses++;
     targetTimeout *= 1.1;
-    targetCounter.decrement();
+    targetManager.remove(target);
 }
